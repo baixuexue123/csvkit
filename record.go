@@ -4,7 +4,7 @@ type Record map[string]string
 
 func (r Record) Keys() []string {
 	keys := make([]string, 0, len(r))
-	for k, _ := range r {
+	for k := range r {
 		keys = append(keys, k)
 	}
 	return keys
