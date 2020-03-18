@@ -18,57 +18,57 @@ func NewDictReader(r io.Reader) *DictReader {
 }
 
 // 如果没有设置字段名, 读取文件第一行作为字段名
-func (w *DictReader) FieldNames() ([]string, error) {
-	if len(w.fieldNames) == 0 {
-		fieldNames, err := w.reader.Read()
+func (r *DictReader) FieldNames() ([]string, error) {
+	if len(r.fieldNames) == 0 {
+		fieldNames, err := r.reader.Read()
 		if err != nil {
 			return nil, err
 		}
-		w.fieldNames = fieldNames
+		r.fieldNames = fieldNames
 	}
-	return w.fieldNames, nil
+	return r.fieldNames, nil
 }
 
-func (w *DictReader) Read() (dict Record, err error) {
-	_, err = w.FieldNames()
+func (r *DictReader) Read() (dict Record, err error) {
+	_, err = r.FieldNames()
 	if err != nil {
 		return nil, err
 	}
 
-	record, err := w.reader.Read()
+	record, err := r.reader.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	dict = make(Record, len(w.fieldNames))
-	for i, name := range w.fieldNames {
+	dict = make(Record, len(r.fieldNames))
+	for i, name := range r.fieldNames {
 		if len(record) > i {
 			dict[name] = record[i]
 		} else {
-			dict[name] = w.restVal
+			dict[name] = r.restVal
 		}
 	}
 	return dict, nil
 }
 
-func (w *DictReader) ReadAll() (data []Record, err error) {
-	_, err = w.FieldNames()
+func (r *DictReader) ReadAll() (data []Record, err error) {
+	_, err = r.FieldNames()
 	if err != nil {
 		return nil, err
 	}
 
-	records, err := w.reader.ReadAll()
+	records, err := r.reader.ReadAll()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, r := range records {
-		d := make(Record, len(w.fieldNames))
-		for j, name := range w.fieldNames {
-			if len(r) > j {
-				d[name] = r[j]
+	for _, rc := range records {
+		d := make(Record, len(r.fieldNames))
+		for j, name := range r.fieldNames {
+			if len(rc) > j {
+				d[name] = rc[j]
 			} else {
-				d[name] = w.restVal
+				d[name] = r.restVal
 			}
 		}
 		data = append(data, d)
