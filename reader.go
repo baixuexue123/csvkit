@@ -19,7 +19,7 @@ func NewDictReader(r io.Reader) *DictReader {
 
 // 如果没有设置字段名, 读取文件第一行作为字段名
 func (r *DictReader) FieldNames() ([]string, error) {
-	if len(r.fieldNames) == 0 {
+	if r.fieldNames == nil {
 		fieldNames, err := r.reader.Read()
 		if err != nil {
 			return nil, err
@@ -29,12 +29,7 @@ func (r *DictReader) FieldNames() ([]string, error) {
 	return r.fieldNames, nil
 }
 
-func (r *DictReader) Read() (dict Record, err error) {
-	_, err = r.FieldNames()
-	if err != nil {
-		return nil, err
-	}
-
+func (r *DictReader) ReadLine() (dict Record, err error) {
 	record, err := r.reader.Read()
 	if err != nil {
 		return nil, err
@@ -51,12 +46,21 @@ func (r *DictReader) Read() (dict Record, err error) {
 	return dict, nil
 }
 
-func (r *DictReader) ReadAll() (data []Record, err error) {
-	_, err = r.FieldNames()
-	if err != nil {
-		return nil, err
+func (r *DictReader) ReadLines(n int) (data []Record, err error) {
+	for i := 0; i < n; i++ {
+		line, err := r.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		data = append(data, line)
 	}
+	return data, nil
+}
 
+func (r *DictReader) ReadAll() (data []Record, err error) {
 	records, err := r.reader.ReadAll()
 	if err != nil {
 		return nil, err

@@ -19,7 +19,7 @@ Ken,Thompson,ken
 	t.Log(reader.FieldNames())
 
 	for {
-		record, err := reader.Read()
+		record, err := reader.ReadLine()
 		if err == io.EOF {
 			break
 		}
@@ -28,6 +28,24 @@ Ken,Thompson,ken
 		}
 		t.Log(record)
 	}
+}
+
+func TestReadLines(t *testing.T) {
+	in := `first_name,last_name,username
+"Rob","Pike",rob
+Ken,Thompson,ken
+"Robert","Griesemer","gri"
+`
+	r := strings.NewReader(in)
+	reader := NewDictReader(r)
+
+	t.Log(reader.FieldNames())
+
+	data, err := reader.ReadLines(5)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(data)
 }
 
 func TestReadAll(t *testing.T) {
