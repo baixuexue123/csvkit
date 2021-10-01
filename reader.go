@@ -18,58 +18,62 @@ func NewDictReader(r io.Reader) *DictReader {
 }
 
 // FieldNames
-// If fieldNames is omitted, the values in the first row of reader will be used as the fieldNames
-func (w *DictReader) FieldNames() ([]string, error) {
-	if len(w.fieldNames) == 0 {
-		fieldNames, err := w.reader.Read()
+// If fieldNames is omitted, the values in the first row of file will be used as the fieldNames.
+func (r *DictReader) FieldNames() ([]string, error) {
+	if r.fieldNames == nil {
+		fieldNames, err := r.reader.Read()
 		if err != nil {
 			return nil, err
 		}
-		w.fieldNames = fieldNames
+		r.fieldNames = fieldNames
 	}
-	return w.fieldNames, nil
+	return r.fieldNames, nil
 }
 
-func (w *DictReader) Read() (dict Record, err error) {
-	_, err = w.FieldNames()
+func (r *DictReader) ReadLine() (dict Record, err error) {
+	record, err := r.reader.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	record, err := w.reader.Read()
-	if err != nil {
-		return nil, err
-	}
-
-	dict = make(Record, len(w.fieldNames))
-	for i, name := range w.fieldNames {
+	dict = make(Record, len(r.fieldNames))
+	for i, name := range r.fieldNames {
 		if len(record) > i {
 			dict[name] = record[i]
 		} else {
-			dict[name] = w.restVal
+			dict[name] = r.restVal
 		}
 	}
 	return dict, nil
 }
 
-func (w *DictReader) ReadAll() (data []Record, err error) {
-	_, err = w.FieldNames()
+func (r *DictReader) ReadLines(n int) (data []Record, err error) {
+	for i := 0; i < n; i++ {
+		line, err := r.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		data = append(data, line)
+	}
+	return data, nil
+}
+
+func (r *DictReader) ReadAll() (data []Record, err error) {
+	records, err := r.reader.ReadAll()
 	if err != nil {
 		return nil, err
 	}
 
-	records, err := w.reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, r := range records {
-		d := make(Record, len(w.fieldNames))
-		for j, name := range w.fieldNames {
-			if len(r) > j {
-				d[name] = r[j]
+	for _, rc := range records {
+		d := make(Record, len(r.fieldNames))
+		for j, name := range r.fieldNames {
+			if len(rc) > j {
+				d[name] = rc[j]
 			} else {
-				d[name] = w.restVal
+				d[name] = r.restVal
 			}
 		}
 		data = append(data, d)
