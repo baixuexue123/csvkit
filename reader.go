@@ -17,7 +17,8 @@ func NewDictReader(r io.Reader) *DictReader {
 	}
 }
 
-// 如果没有设置字段名, 读取文件第一行作为字段名
+// FieldNames
+// If fieldNames is omitted, the values in the first row of reader will be used as the fieldNames
 func (w *DictReader) FieldNames() ([]string, error) {
 	if len(w.fieldNames) == 0 {
 		fieldNames, err := w.reader.Read()
